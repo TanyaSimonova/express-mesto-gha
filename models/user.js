@@ -20,5 +20,3 @@ const userSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model('user', userSchema);
-
-// _id: mongoose.Schema.Types.ObjectId ;
