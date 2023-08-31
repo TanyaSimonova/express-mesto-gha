@@ -1,5 +1,5 @@
-const cardModel = require('../models/card');
 const mongoose = require('mongoose');
+const cardModel = require('../models/card');
 
 const createCard = (req, res) => {
   const { name, link } = req.body;
@@ -15,16 +15,16 @@ const createCard = (req, res) => {
       }
       return res.status(500).send({ message: 'Server Error' });
     });
-}
+};
 
 const getCards = (req, res) => cardModel.find({})
-  .then(r => res.status(200).send(r))
-  .catch((e) => res.status(500).send({ message: 'Server Error' }));
+  .then((r) => res.status(200).send(r))
+  .catch(() => res.status(500).send({ message: 'Server Error' }));
 
 const deleteCardById = (req, res) => {
   const { cardId } = req.params;
   return cardModel.findByIdAndDelete(cardId)
-    .then(r => res.status(200).send({ message: 'Successfully deleted' }))
+    .then(() => res.status(200).send({ message: 'Successfully deleted' }))
     .catch((e) => {
       if (e instanceof mongoose.Error.CastError) {
         return res.status(404).send({ message: 'Card not found' });
