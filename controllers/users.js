@@ -36,10 +36,10 @@ const updateUserProfile = (req, res) => {
   return userModel.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: 'true' })
     .then((r) => res.status(200).send(r))
     .catch((e) => {
-      if (e instanceof mongoose.Error.ValidationError) {
-        return res.status(400).send({ message: 'Invalid data' });
-      } if (e instanceof mongoose.Error.CastError) {
+      if (e instanceof mongoose.Error.CastError) {
         return res.status(404).send({ message: 'User not found' });
+      } if (e instanceof mongoose.Error.ValidationError) {
+        return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
     });
