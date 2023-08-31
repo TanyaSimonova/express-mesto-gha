@@ -30,6 +30,9 @@ app.use((req, res, next) => {
 
 app.use(cardRouter);
 app.use(userRouter);
+app.use('*', (req, res) => {
+  res.status(404).send({ message: 'Page not found' });
+});
 
 app.listen(port, () => {
   console.log(`Server listen on port ${port}`);

@@ -24,10 +24,15 @@ const getCards = (req, res) => cardModel.find({})
 const deleteCardById = (req, res) => {
   const { cardId } = req.params;
   return cardModel.findByIdAndDelete(cardId)
-    .then(() => res.status(200).send({ message: 'Successfully deleted' }))
+    .then((r) => {
+      if (r === null) {
+        return res.status(404).send({ message: 'Card not found' });
+      }
+      return res.status(200).send({ message: 'Successfully deleted' });
+    })
     .catch((e) => {
       if (e instanceof mongoose.Error.CastError) {
-        return res.status(404).send({ message: 'Card not found' });
+        return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
     });
