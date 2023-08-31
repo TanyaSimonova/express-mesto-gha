@@ -1,5 +1,6 @@
 const express = require('express');
 const mongoose = require('mongoose');
+const helmet = require('helmet');
 const userRouter = require('./routes/users');
 const cardRouter = require('./routes/cards');
 
@@ -33,6 +34,8 @@ app.use(userRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Page not found' });
 });
+
+app.use(helmet());
 
 app.listen(port, () => {
   console.log(`Server listen on port ${port}`);

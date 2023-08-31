@@ -24,14 +24,12 @@ const getCards = (req, res) => cardModel.find({})
 const deleteCardById = (req, res) => {
   const { cardId } = req.params;
   return cardModel.findByIdAndDelete(cardId)
-    .then((r) => {
-      if (r === null) {
-        return res.status(404).send({ message: 'Card not found' });
-      }
-      return res.status(200).send({ message: 'Successfully deleted' });
-    })
+    .orFail(new Error('NotValid'))
+    .then(() => res.status(200).send({ message: 'Successfully deleted' }))
     .catch((e) => {
-      if (e instanceof mongoose.Error.CastError) {
+      if (e.message === 'NotValid') {
+        return res.status(404).send({ message: 'Card not found' });
+      } if (e instanceof mongoose.Error.CastError) {
         return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
@@ -43,14 +41,12 @@ const likeCard = (req, res) => cardModel.findByIdAndUpdate(
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .then((r) => {
-    if (r === null) {
-      return res.status(404).send({ message: 'Card not found' });
-    }
-    return res.status(200).send(r);
-  })
+  .orFail(new Error('NotValid'))
+  .then((r) => res.status(200).send(r))
   .catch((e) => {
-    if (e instanceof mongoose.Error.CastError) {
+    if (e.message === 'NotValid') {
+      return res.status(404).send({ message: 'Card not found' });
+    } if (e instanceof mongoose.Error.CastError) {
       return res.status(400).send({ message: 'Invalid data' });
     }
     return res.status(500).send({ message: 'Server Error' });
@@ -62,14 +58,12 @@ const dislikeCard = (req, res) => {
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .then((r) => {
-      if (r === null) {
-        return res.status(404).send({ message: 'Card not found' });
-      }
-      return res.status(200).send({ message: 'Successfully deleted' });
-    })
+    .orFail(new Error('NotValid'))
+    .then(() => res.status(200).send({ message: 'Successfully deleted' }))
     .catch((e) => {
-      if (e instanceof mongoose.Error.CastError) {
+      if (e.message === 'NotValid') {
+        return res.status(404).send({ message: 'Card not found' });
+      } if (e instanceof mongoose.Error.CastError) {
         return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });

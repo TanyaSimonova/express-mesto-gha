@@ -8,14 +8,12 @@ const getUsers = (req, res) => userModel.find({})
 const getUserById = (req, res) => {
   const { userId } = req.params;
   return userModel.findById(userId)
-    .then((r) => {
-      if (r === null) {
-        return res.status(404).send({ message: 'User not found' });
-      }
-      return res.status(200).send(r);
-    })
+    .orFail(new Error('NotValid'))
+    .then((r) => res.status(200).send(r))
     .catch((e) => {
-      if (e instanceof mongoose.Error.CastError) {
+      if (e.message === 'NotValid') {
+        return res.status(404).send({ message: 'User not found' });
+      } if (e instanceof mongoose.Error.CastError) {
         return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
@@ -37,11 +35,12 @@ const createUser = (req, res) => {
 const updateUserProfile = (req, res) => {
   const { name, about } = req.body;
   return userModel.findByIdAndUpdate(req.user._id, { name, about }, { new: 'true', runValidators: 'true' })
+    .orFail(new Error('NotValid'))
     .then((r) => res.status(200).send(r))
     .catch((e) => {
-      if (e instanceof mongoose.Error.CastError) {
+      if (e.message === 'NotValid') {
         return res.status(404).send({ message: 'User not found' });
-      } if (e instanceof mongoose.Error.ValidationError) {
+      } if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
         return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
@@ -51,12 +50,13 @@ const updateUserProfile = (req, res) => {
 const updateUserAvatar = (req, res) => {
   const { avatar } = req.body;
   return userModel.findByIdAndUpdate(req.user._id, { avatar }, { new: 'true', runValidators: 'true' })
+    .orFail(new Error('NotValid'))
     .then((r) => res.status(200).send(r))
     .catch((e) => {
-      if (e instanceof mongoose.Error.ValidationError) {
-        return res.status(400).send({ message: 'Invalid data' });
-      } if (e instanceof mongoose.Error.CastError) {
+      if (e.message === 'NotValid') {
         return res.status(404).send({ message: 'User not found' });
+      } if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
+        return res.status(400).send({ message: 'Invalid data' });
       }
       return res.status(500).send({ message: 'Server Error' });
     });
