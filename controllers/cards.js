@@ -1,7 +1,10 @@
 const mongoose = require('mongoose');
 const cardModel = require('../models/card');
+const NoRights = require('../errors/NoRights');
+const NotFound = require('../errors/NotFound');
+const NotValid = require('../errors/NotValid');
 
-const createCard = (req, res) => {
+const createCard = (req, res, next) => {
   const { name, link } = req.body;
   return cardModel.create({ name, link, owner: req.user._id })
     .then((card) => {
@@ -11,62 +14,61 @@ const createCard = (req, res) => {
     })
     .catch((e) => {
       if (e instanceof mongoose.Error.ValidationError) {
-        return res.status(400).send({ message: 'Invalid data' });
+        next(new NotValid('Invalid data'));
       }
-      return res.status(500).send({ message: 'Server Error' });
+      next(e);
     });
 };
 
-const getCards = (req, res) => cardModel.find({})
+const getCards = (req, res, next) => cardModel.find({})
   .then((r) => res.status(200).send(r))
-  .catch(() => res.status(500).send({ message: 'Server Error' }));
+  .catch(next);
 
-const deleteCardById = (req, res) => {
-  const { cardId } = req.params;
-  return cardModel.findByIdAndDelete(cardId)
-    .orFail(new Error('NotValid'))
-    .then(() => res.status(200).send({ message: 'Successfully deleted' }))
-    .catch((e) => {
-      if (e.message === 'NotValid') {
-        return res.status(404).send({ message: 'Card not found' });
-      } if (e instanceof mongoose.Error.CastError) {
-        return res.status(400).send({ message: 'Invalid data' });
-      }
-      return res.status(500).send({ message: 'Server Error' });
-    });
+const deleteCardById = async (req, res, next) => {
+  try {
+    const { cardId } = req.params;
+    const card = await cardModel.findById(cardId).orFail(new NotFound('Card not found'));
+
+    if (req.user._id !== card.owner.toString()) {
+      throw new NoRights('No rights to perform the operation');
+    }
+    const deleteCard = await cardModel.findByIdAndDelete(card._id);
+    return res.status(200).send({ deleteCard, message: 'Successfully deleted' });
+  } catch (e) {
+    if (e instanceof mongoose.Error.CastError) {
+      next(new NotValid('Invalid data'));
+    }
+    next(e);
+  }
 };
 
-const likeCard = (req, res) => cardModel.findByIdAndUpdate(
+const likeCard = (req, res, next) => cardModel.findByIdAndUpdate(
   req.params.cardId,
   { $addToSet: { likes: req.user._id } },
   { new: true },
 )
-  .orFail(new Error('NotValid'))
+  .orFail(new NotFound('Card not found'))
   .then((r) => res.status(200).send(r))
   .catch((e) => {
-    if (e.message === 'NotValid') {
-      return res.status(404).send({ message: 'Card not found' });
-    } if (e instanceof mongoose.Error.CastError) {
-      return res.status(400).send({ message: 'Invalid data' });
+    if (e instanceof mongoose.Error.CastError) {
+      next(new NotValid('Invalid data'));
     }
-    return res.status(500).send({ message: 'Server Error' });
+    next(e);
   });
 
-const dislikeCard = (req, res) => {
+const dislikeCard = (req, res, next) => {
   cardModel.findByIdAndUpdate(
     req.params.cardId,
     { $pull: { likes: req.user._id } },
     { new: true },
   )
-    .orFail(new Error('NotValid'))
+    .orFail(new NotFound('Card not found'))
     .then(() => res.status(200).send({ message: 'Successfully deleted' }))
     .catch((e) => {
-      if (e.message === 'NotValid') {
-        return res.status(404).send({ message: 'Card not found' });
-      } if (e instanceof mongoose.Error.CastError) {
-        return res.status(400).send({ message: 'Invalid data' });
+      if (e instanceof mongoose.Error.CastError) {
+        next(new NotValid('Invalid data'));
       }
-      return res.status(500).send({ message: 'Server Error' });
+      next(e);
     });
 };
 
