@@ -12,7 +12,7 @@ module.exports = (req, res, next) => {
 
     const validTocken = token.replace('Bearer ', '');
 
-    payload = jwt.verify(validTocken, 'super-strong-secret');
+    payload = jwt.verify(validTocken, 'jwt-secret-key');
   } catch (e) {
     if (e.name === 'JsonWebTokenError') {
       next(new NotAuthenticated('Problems with the token'));

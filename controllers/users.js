@@ -60,7 +60,7 @@ const login = async (req, res, next) => {
     if (!matched) {
       throw new NotAuthenticated('Incorrect email or password');
     }
-    const token = jwt.sign({ _id: user._id }, 'super-strong-secret', { expiresIn: '7d' });
+    const token = jwt.sign({ _id: user._id }, 'jwt-secret-key', { expiresIn: '7d' });
     return res.status(200).send({ token });
   } catch (e) {
     if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
