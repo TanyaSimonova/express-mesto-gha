@@ -9,14 +9,17 @@ const NoDuplicate = require('../errors/NoDuplicate');
 
 const SALT_ROUNDS = 10;
 
-const getUsers = (req, res, next) => userModel.find({})
-  .then((users) => {
-    if (!users) {
-      throw new NotFound('Users not found');
-    }
-    res.status(200).send(users);
-  })
-  .catch(next);
+const getUsers = (req, res, next) => {
+  userModel.find({})
+    .orFail(new NotAuthenticated('Incorrect email or password'))
+    .then((users) => {
+      if (!users) {
+        throw new NotFound('Users not found');
+      }
+      res.status(200).send(users);
+    })
+    .catch(next);
+};
 
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
@@ -40,7 +43,9 @@ const createUser = async (req, res, next) => {
     const newUser = await userModel.create({
       email, password: hash, name, about, avatar,
     });
-    return res.status(201).send({ newUser });
+    return res.status(201).send({
+      _id: newUser._id, name: newUser.name, about: newUser.about, avatar: newUser.avatar,
+    });
   } catch (e) {
     if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
       next(new NotValid('Invalid data: please, сheck the email and password fields'));

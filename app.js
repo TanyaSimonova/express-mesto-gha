@@ -29,6 +29,9 @@ app.post('/signup', celebrate({
   [Segments.BODY]: Joi.object().keys({
     email: Joi.string().email().required(),
     password: Joi.string().min(8).required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().pattern(/(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?#?/),
   }).unknown(true),
 }), createUser);
 
@@ -50,6 +53,7 @@ app.use(errors());
 app.use(helmet());
 
 app.use((err, req, res, next) => {
+  next();
   const { statusCode = 500, message } = err;
   res
     .status(statusCode)
