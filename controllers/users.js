@@ -50,6 +50,7 @@ const createUser = async (req, res, next) => {
     }
     next(e);
   }
+  return false;
 };
 
 const login = async (req, res, next) => {
@@ -68,6 +69,7 @@ const login = async (req, res, next) => {
     }
     next(e);
   }
+  return false;
 };
 
 const getProfile = (req, res, next) => userModel.findOne({ _id: req.user._id })
