@@ -1,6 +1,8 @@
 const express = require('express');
 const mongoose = require('mongoose');
-const { celebrate, Joi, errors, Segments } = require('celebrate');
+const {
+  celebrate, Joi, errors, Segments,
+} = require('celebrate');
 const helmet = require('helmet');
 const auth = require('./middlewares/auth');
 const userRouter = require('./routes/users');
@@ -43,7 +45,6 @@ app.use(userRouter);
 app.use('*', (req, res) => {
   res.status(404).send({ message: 'Page not found' });
 });
-
 app.use(errors());
 
 app.use(helmet());

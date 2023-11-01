@@ -29,11 +29,11 @@ const deleteCardById = async (req, res, next) => {
     const { cardId } = req.params;
     const card = await cardModel.findById(cardId).orFail(new NotFound('Card not found'));
 
-    if (req.user._id !== card.owner.toString()) {
-      throw new NoRights('No rights to perform the operation');
+    if (req.user._id === card.owner.toString()) {
+      const deleteCard = await cardModel.findByIdAndDelete(card._id);
+      return res.status(200).send({ deleteCard, message: 'Successfully deleted' });
     }
-    const deleteCard = await cardModel.findByIdAndDelete(card._id);
-    return res.status(200).send({ deleteCard, message: 'Successfully deleted' });
+    return next(new NoRights('No rights to perform the operation'));
   } catch (e) {
     if (e instanceof mongoose.Error.CastError) {
       next(new NotValid('Invalid data'));
