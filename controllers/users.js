@@ -9,17 +9,14 @@ const NoDuplicate = require('../errors/NoDuplicate');
 
 const SALT_ROUNDS = 10;
 
-const getUsers = (req, res, next) => {
-  userModel.find({})
-    .orFail(new NotAuthenticated('Incorrect email or password'))
-    .then((users) => {
-      if (!users) {
-        throw new NotFound('Users not found');
-      }
-      res.status(200).send(users);
-    })
-    .catch(next);
-};
+const getUsers = (req, res, next) => userModel.find({})
+  .then((users) => {
+    if (!users) {
+      throw new NotFound('Users not found');
+    }
+    res.status(200).send(users);
+  })
+  .catch(next);
 
 const getUserById = (req, res, next) => {
   const { userId } = req.params;
