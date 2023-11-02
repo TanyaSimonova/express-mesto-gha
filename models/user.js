@@ -1,5 +1,6 @@
 const mongoose = require('mongoose');
 const validator = require('validator');
+const REGEX_URL = require('../utils/constants');
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -19,7 +20,7 @@ const userSchema = new mongoose.Schema({
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
     validate: {
       validator(v) {
-        return /(http|https):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-/]))?#?/.test(v);
+        return REGEX_URL.test(v);
       },
       message: (props) => `${props.value} is not a valid link!`,
     },
@@ -38,7 +39,6 @@ const userSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    minlength: [8, 'Минимальная длина "password" - 8 символов'],
     required: {
       value: true,
       message: 'Поле password явялется обязательным',

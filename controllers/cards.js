@@ -14,9 +14,9 @@ const createCard = (req, res, next) => {
     })
     .catch((e) => {
       if (e instanceof mongoose.Error.ValidationError) {
-        next(new NotValid('Invalid data'));
+        return next(new NotValid('Invalid data'));
       }
-      next(e);
+      return next(e);
     });
 };
 
@@ -32,15 +32,14 @@ const deleteCardById = async (req, res, next) => {
     if (req.user._id !== card.owner.toString()) {
       return next(new NoRights('No rights to perform the operation'));
     }
-    const deleteCard = await cardModel.findByIdAndDelete(card._id);
-    return res.status(200).send({ deleteCard, message: 'Successfully deleted' });
+    await cardModel.deleteOne(card._id);
+    return res.status(200).send({ card, message: 'Successfully deleted' });
   } catch (e) {
     if (e instanceof mongoose.Error.CastError) {
-      next(new NotValid('Invalid data'));
+      return next(new NotValid('Invalid data'));
     }
-    next(e);
+    return next(e);
   }
-  return false;
 };
 
 const likeCard = (req, res, next) => cardModel.findByIdAndUpdate(
@@ -52,9 +51,9 @@ const likeCard = (req, res, next) => cardModel.findByIdAndUpdate(
   .then((r) => res.status(200).send(r))
   .catch((e) => {
     if (e instanceof mongoose.Error.CastError) {
-      next(new NotValid('Invalid data'));
+      return next(new NotValid('Invalid data'));
     }
-    next(e);
+    return next(e);
   });
 
 const dislikeCard = (req, res, next) => {
@@ -67,9 +66,9 @@ const dislikeCard = (req, res, next) => {
     .then(() => res.status(200).send({ message: 'Successfully deleted' }))
     .catch((e) => {
       if (e instanceof mongoose.Error.CastError) {
-        next(new NotValid('Invalid data'));
+        return next(new NotValid('Invalid data'));
       }
-      next(e);
+      return next(e);
     });
 };
 

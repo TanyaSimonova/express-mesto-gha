@@ -14,7 +14,7 @@ const getUsers = (req, res, next) => userModel.find({})
     if (!users) {
       throw new NotFound('Users not found');
     }
-    res.status(200).send(users);
+    return res.status(200).send(users);
   })
   .catch(next);
 
@@ -25,9 +25,9 @@ const getUserById = (req, res, next) => {
     .then((r) => res.status(200).send(r))
     .catch((e) => {
       if (e instanceof mongoose.Error.CastError) {
-        next(new NotValid('Invalid data'));
+        return next(new NotValid('Invalid data'));
       }
-      next(e);
+      return next(e);
     });
 };
 
@@ -45,14 +45,13 @@ const createUser = async (req, res, next) => {
     });
   } catch (e) {
     if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
-      next(new NotValid('Invalid data: please, сheck the email and password fields'));
+      return next(new NotValid('Invalid data: please, сheck the email and password fields'));
     }
     if (e.code === 11000) {
-      next(new NoDuplicate('This email is already exist'));
+      return next(new NoDuplicate('This email is already exist'));
     }
-    next(e);
+    return next(e);
   }
-  return false;
 };
 
 const login = async (req, res, next) => {
@@ -67,11 +66,10 @@ const login = async (req, res, next) => {
     return res.status(200).send({ token });
   } catch (e) {
     if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
-      next(new NotValid('Field validation error'));
+      return next(new NotValid('Field validation error'));
     }
-    next(e);
+    return next(e);
   }
-  return false;
 };
 
 const getProfile = (req, res, next) => userModel.findOne({ _id: req.user._id })
@@ -79,9 +77,9 @@ const getProfile = (req, res, next) => userModel.findOne({ _id: req.user._id })
   .then((r) => res.status(200).send(r))
   .catch((e) => {
     if (e instanceof mongoose.Error.CastError) {
-      next(new NotValid('Invalid data'));
+      return next(new NotValid('Invalid data'));
     }
-    next(e);
+    return next(e);
   });
 
 const updateUserProfile = (req, res, next) => {
@@ -91,9 +89,9 @@ const updateUserProfile = (req, res, next) => {
     .then((r) => res.status(200).send(r))
     .catch((e) => {
       if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
-        next(new NotValid('Invalid data'));
+        return next(new NotValid('Invalid data'));
       }
-      next(e);
+      return next(e);
     });
 };
 
@@ -104,9 +102,9 @@ const updateUserAvatar = (req, res, next) => {
     .then((r) => res.status(200).send(r))
     .catch((e) => {
       if (e instanceof mongoose.Error.ValidationError || e instanceof mongoose.Error.CastError) {
-        next(new NotValid('Invalid data'));
+        return next(new NotValid('Invalid data'));
       }
-      next(e);
+      return next(e);
     });
 };
 
